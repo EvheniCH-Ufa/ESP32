@@ -8,6 +8,9 @@
 
 # Игнорировать кэш
 */.cache/*
+# Добавить правило для .cache
+*/.cache/
+*/.cache/**
 
 # Игнорировать sdkconfig
 */sdkconfig
