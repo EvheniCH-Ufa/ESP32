@@ -1,8 +1,23 @@
-# Игнорировать содержимое build
-build/*
+# Игнорировать сборку
+*/build/*
+*/build/**/*
 
-# Но разрешить все .bin файлы внутри build
-!build/*.bin
+# Но разрешить .bin файлы
+!*/build/*.bin
+!*/build/**/*.bin
 
-.cache/*
+# Игнорировать кэш
+*/.cache/*
 
+# Игнорировать sdkconfig
+*/sdkconfig
+*/sdkconfig.old
+
+# Игнорировать Python
+python_env/
+__pycache__/
+*.pyc
+
+# Игнорировать IDE
+.vscode/
+.idea/
