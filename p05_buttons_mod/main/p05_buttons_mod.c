@@ -3,6 +3,7 @@
 #include "freertos/task.h"
 #include "soc/soc.h"
 #include "soc/gpio_reg.h"
+#include <stdbool.h>
 #include <stdint.h>
 
 
@@ -22,29 +23,23 @@
     - 3 кнопки - переключается раз в 2 секунды;
     - 4 кнопки - переключается раз в 1 секунду.
 
-    Изменит схему и программу так, чтобы задействовать GPIO25, GPIO26, GPIO32 и GPIO33.
-    - будет
-
-
-то есть если 0, то горит всегда 
-суммируем количество кнопок
-
-тики 100 мс - высокая чуствительность 
-но можно менять на 4000, 3000, 2000, 10000 - очень низкая чуствительность
-
-(5 - кол-во кнопок)*10.
-
-еали 
-если количество тиков % ХХХ == 0, то переключаем
-
-
+    Изменит схему и программу так, чтобы задействовать GPIO25, GPIO26, GPIO32 и GPIO33.0
+    - вместо кнопок поставил переключатели - switch
+    - 32 и 33 не работают в Picsimlab - заняты чем-то другим, наверное, подключил 4, 5, 25, 26 
 */
 
 
 // Макрос для перевода номера GPIO в битовую маску
 #define GPIO(gpio_num) (1ULL << (gpio_num))
-
 #define LED GPIO_NUM_2
+
+const uint32_t  BUTTON_PORT1 = 4;
+const uint32_t  BUTTON_PORT2 = 5;
+const uint32_t  BUTTON_PORT3 = 25;
+const uint32_t  BUTTON_PORT4 = 26;
+
+const uint32_t MAX_BUTTONS = 4;
+const uint32_t TICKS_PER_SECOND = 100;
 
 inline bool is_pin_set(uint64_t data, uint64_t pin)
 {
@@ -56,7 +51,7 @@ void app_main()
     gpio_config_t io_config = {
         .intr_type = GPIO_INTR_DISABLE,
         .mode = GPIO_MODE_INPUT,
-        .pin_bit_mask = GPIO(25) | GPIO(26) | GPIO(32) | GPIO(33),
+        .pin_bit_mask = GPIO(BUTTON_PORT1) | GPIO(BUTTON_PORT2) | GPIO(BUTTON_PORT3) | GPIO(BUTTON_PORT4),
         .pull_up_en = GPIO_PULLUP_DISABLE, // Установите GPIO_PULLUP_ENABLE, если НЕ используете внешние резисторы
         .pull_down_en = GPIO_PULLDOWN_DISABLE,
     };
@@ -66,34 +61,47 @@ void app_main()
 
     bool led_state = false;
     uint32_t delay = 1000;
+    uint32_t ticks = 0;
 
     while (1)
     {
         uint64_t io_data = REG_READ(GPIO_IN_REG);
-        printf("GPIO_IN_REG: %llu\r\n", io_data);
 
-        printf("Is GPIO14 set? %d\r\n", is_pin_set(io_data, GPIO(25)));
-        printf("Is GPIO25 set? %d\r\n", is_pin_set(io_data, GPIO(26)));
-        printf("Is GPIO26 set? %d\r\n", is_pin_set(io_data, GPIO(32)));
-        printf("Is GPIO27 set? %d\r\n", is_pin_set(io_data, GPIO(33)));
-
-        uint32_t button_count = is_pin_set(io_data, GPIO(25)
-                              + is_pin_set(io_data, GPIO(26))
-                              + is_pin_set(io_data, GPIO(32))
-                              + is_pin_set(io_data, GPIO(33));
-                              
-        if (button_count)
+        if (ticks % 10 == 0)
         {
-zxcvzcv
+            printf("GPIO_IN_REG: %llu\n",    io_data);
+            printf("Number TiCKS is: %ld\n", ticks);
+            printf("Is GPIO%ld set? %d\n",   BUTTON_PORT1, is_pin_set(io_data, GPIO(BUTTON_PORT1)));
+            printf("Is GPIO%ld set? %d\n",   BUTTON_PORT2, is_pin_set(io_data, GPIO(BUTTON_PORT2)));
+            printf("Is GPIO%ld set? %d\n",   BUTTON_PORT3, is_pin_set(io_data, GPIO(BUTTON_PORT3)));
+            printf("Is GPIO%ld set? %d\r\n", BUTTON_PORT4, is_pin_set(io_data, GPIO(BUTTON_PORT4)));
+        }
+
+        uint32_t push_buttons_count = is_pin_set(io_data, GPIO(BUTTON_PORT1))
+                                    + is_pin_set(io_data, GPIO(BUTTON_PORT2))
+                                    + is_pin_set(io_data, GPIO(BUTTON_PORT3))
+                                    + is_pin_set(io_data, GPIO(BUTTON_PORT4));
+                              
+        if (push_buttons_count == 0) // не нажато ничего
+        {
+            if (!led_state)
+            {
+                led_state = true;
+                gpio_set_level(LED, led_state);
+            }
         }
         else 
         {
-sdvzv
+            uint32_t chastota_miganija_per_second = (1 + MAX_BUTTONS - push_buttons_count)
+                                                  * (1000/TICKS_PER_SECOND);
+                                                  
+            if (ticks  % chastota_miganija_per_second == 0)
+            {
+                led_state = !led_state;
+                gpio_set_level(LED, led_state);
+            }
         }
-        
-
-        gpio_set_level(LED, led_state);
-        led_state = !led_state;
-        vTaskDelay(delay / portTICK_PERIOD_MS);
+        vTaskDelay(TICKS_PER_SECOND / portTICK_PERIOD_MS);
+        ++ticks;
     }
 }
