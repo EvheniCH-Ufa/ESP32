@@ -1,0 +1,20 @@
+CompileFlags: 
+  Add: 
+    - -DESP_PLATFORM 
+    - -DIDF_VER=\"v5.3.5\" 
+    - -IC:/esp-idf/components/freertos/FreeRTOS-Kernel/include 
+    - -IC:/esp-idf/components/esp_hw_support/include 
+    - -IC:/esp-idf/components/esp_rom/include 
+    - -IC:/esp-idf/components/esp_common/include 
+    - -IC:/esp-idf/components/esp_system/include 
+    - -IC:/esp-idf/components/esp_timer/include 
+    - -IC:/esp-idf/components/esp_event/include 
+    - -IC:/esp-idf/components/esp_netif/include 
+    - -IC:/esp-idf/components/lwip/include 
+    - -IC:/esp-idf/components/log/include 
+    - -IC:/esp-idf/components/nvs_flash/include 
+    - -IC:/esp-idf/components/soc/include 
+    - -IC:/esp-idf/components/hal/include 
+    - -IC:/esp-idf/components/xtensa/include 
+    - -IC:/esp-idf/components/driver/include 
+    - -IC:/esp-idf/components/newlib/platform_include 
